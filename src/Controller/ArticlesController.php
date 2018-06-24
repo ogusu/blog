@@ -1,6 +1,10 @@
 <?php
 namespace App\Controller;
 
+// Prior to 3.6 use Cake\Network\Exception\NotFoundException
+use Cake\Http\Exception\NotFoundException;
+
+
 class ArticlesController extends AppController
 {
     public function index() {
@@ -18,6 +22,10 @@ class ArticlesController extends AppController
         $newEntity = $this->Articles->newEntity();
         $this->set('article', $newEntity);
 
+        // 記事のカテゴリーを１つ選択するためにカテゴリーの一覧を追加
+        $categories = $this->Articles->Categories->find('treeList');
+        $this->set(compact('categories'));
+
         // new form / yet posted
         if(!$this->request->is(('POST'))) {
             return;
@@ -30,15 +38,15 @@ class ArticlesController extends AppController
         $saveResult = $this->Articles->save($newArticle);
         $this->set('article', $newEntity);
 
-        // failed
         if(!$saveResult) {
+            // failed
             $this->Flash->error(__('Unable to add your article.'));
-            return;
+        } else {
+            // succeeded
+            $this->Flash->success(__('Your new article has been saved.'));
         }
 
-        // succeeded
-        $this->Flash->success(__('Your new article has been saved.'));
-        $this->redirect(['action' => 'index']);
+        return $this->redirect(['action' => 'index']);
     }
 
     public function edit($id = null) {
@@ -58,15 +66,15 @@ class ArticlesController extends AppController
         $saveResult = $this->Articles->save($patchedEntity);
         $this->set('article', $orginalArticle);
 
-        // failed
         if(!$saveResult) {
+            // failed
             $this->Flash->error(__('Unable to update your article.'));
-            return;
+        } else {
+            //succeeded
+            $this->Flash->success('Your article has been saved.');
         }
 
-        //succeeded
-        $this->Flash->success('Your article has been saved.');
-        $this->redirect(['action' => 'index']);
+        return $this->redirect(['action' => 'index']);
     }
 
     public function delete($id) {
