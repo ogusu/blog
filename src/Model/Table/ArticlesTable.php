@@ -9,9 +9,25 @@ class ArticlesTable extends Table
 {
     public function initialize(array $config)
     {
+        parent::initialize($config);
+
         $this->addBehavior('Timestamp');
         // Just add the belongsTo relation with CategoriesTable
         $this->belongsTo('Categories', ['foreignKey' => 'category_id']);
+        // tagsテーブル
+        $this->belongsToMany('Tags', [
+            'joinTable' => 'ArticlesTags',
+        ]);
+
+        /*
+        $this->belongsToMany(
+            'Tags',
+            [
+                'joinTable' => 'articles_tags',
+                'foreignKey' => 'id'
+            ]
+        );
+        */
     }
 
     /**

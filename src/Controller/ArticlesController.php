@@ -3,6 +3,7 @@ namespace App\Controller;
 
 // Prior to 3.6 use Cake\Network\Exception\NotFoundException
 use Cake\Http\Exception\NotFoundException;
+use Cake\ORM\TableRegistry;
 
 
 class ArticlesController extends AppController
@@ -86,5 +87,55 @@ class ArticlesController extends AppController
             $this->Flash->success(__('The article id:{0} has been deleted.', h($id)));
             return $this->redirect(['action' => 'index']);
         }
+    }
+
+    public function search()
+    {
+        $params = $this->request->getQueryParams();
+
+        // for tag selection
+        $allTags = $this->getTableLocator()->get('Tags')
+            ->find('list')
+            ->order(['title' => 'ASC'])
+            ->toArray();
+        $this->set('tags', $allTags);
+
+        // find Articles
+        $query = $this->Articles->find('all')
+            ->contain(['Tags'])
+            ->contain(['Categories']);
+
+        // post title
+        if(!empty($params['title']))
+        {
+            $query = $query->where(['Articles.title LIKE' => '%' . $params['title'] . '%']);
+        }
+
+        // post body
+        if(!empty($params['body']))
+        {
+            $body = $params['body'];
+            $query = $query->where(function ($exp, $query) use($body)
+            {
+                return $exp->like('Articles.body', "%$body%");
+            });
+        }
+
+        // post tag
+        if(!empty($params['tag']))
+        {
+            $tags = array_filter($params['tag']);
+            if(count($tags) > 0)
+            {
+                $query = $query->matching('Tags', function ($q) use ($tags) {
+                    return $q->where(['Tags.id IN' => $tags]);
+                });
+            }
+        }
+
+        // order by
+        $articles = $query->order(['Articles.id' => 'ASC'])->all();
+        
+        $this->set(compact('articles'));
     }
 }

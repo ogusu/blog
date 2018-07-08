@@ -1,6 +1,10 @@
 <h1>Blog articles</h1>
 
-<p><?= $this->Html->link('Add article', ['action' => 'add']) ?></p>
+<p>
+    <?= $this->Html->link('Search articles', ['action' => 'search']) ?>
+     /
+    <?= $this->Html->link('Add article', ['action' => 'add']) ?>
+</p>
 
 <table>
     <tr>
